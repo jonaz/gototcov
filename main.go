@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"text/tabwriter"
 
 	"golang.org/x/tools/cover"
 )
@@ -20,6 +21,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
 
 	files := 0.0
 	covsum := 0.0
@@ -31,18 +33,18 @@ func main() {
 
 		files++
 		covsum = covsum + coverage
-		fmt.Println(v.FileName, ":", coverage)
+		fmt.Fprintf(w, v.FileName+":\t%.2f\n", coverage)
 	}
 
 	totalCoverage := covsum / files
 
-	fmt.Println("Total coverage:", totalCoverage)
+	fmt.Fprintf(w, "Total coverage:\t%.2f\n", totalCoverage)
+	w.Flush()
 
 	if *errLevel != 0 && totalCoverage < *errLevel {
 		fmt.Println("Error: Expected coverage to be over " + strconv.FormatFloat(*errLevel, 'f', 2, 64))
 		os.Exit(1)
 	}
-
 }
 
 func percentCovered(p *cover.Profile) float64 {
